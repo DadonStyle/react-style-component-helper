@@ -13,21 +13,24 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
+	console.log('start');
 	let disposable = vscode.commands.registerCommand('react-style-component-helper.helloWorld', async function () {
 		const wsedit = new vscode.WorkspaceEdit();
 		const wsPath = vscode.workspace.workspaceFolders[0].uri.fsPath; // gets the path of the first workspace folder
 		const filePath = vscode.Uri.file(wsPath + '/styled.js');
-		// vscode.window.showInformationMessage(filePath.toString());
-		if (fs.existsSync(wsPath + '/styled.js')) {
-			vscode.window.showInformationMessage('Your file already created!');
-			// wsedit.deleteFile(filePath);
+		// if (fs.existsSync(wsPath + '/styled.js')) {
+		// 	vscode.window.showInformationMessage('Your file already created!');
+		// 	// wsedit.deleteFile(filePath);
+		// }
+		wsedit.createFile(filePath, { overwrite: false });
+		await vscode.workspace.applyEdit(wsedit);
+		if (typeof vscode.window.activeTextEditor === typeof undefined) {
+			 return vscode.window.showInformationMessage('Please enter the required file and try again');
 		}
-		console.log(vscode.window.activeTextEditor.document.fileName);
-		wsedit.createFile(filePath);
-		vscode.workspace.applyEdit(wsedit);
 		const contents = fs.readFileSync(vscode.window.activeTextEditor.document.fileName, 'utf-8');
 		const arrFile = contents.split(/\r?\n/);
-		console.log(arrFile)
+		console.log('Im the file name', vscode.window.activeTextEditor.document.fileName);
+		console.log('File Array', arrFile[1]);
 		vscode.window.showInformationMessage('Your styled.js file has been created!');
 	});
 
