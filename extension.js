@@ -28,10 +28,20 @@ function activate(context) {
 		/* get the tags array */
 		if (fs.existsSync(styledFilePath.fsPath)) {
 			const styledTagsObject = findTagsInCurrentFile(styledFilePath.fsPath, 'const', '=');
+			const duplicateMap = new Map(tagsObject.relevantTags.map((item) => [item, item]))
+			const relevantTags = [];
+			styledTagsObject.relevantTags.forEach((item
+				) => {
+					if(duplicateMap.get(item)){
+						return;
+					}
+					relevantTags.push(item);
+				});
+			// const relevantTags = Array.from(new Set(arr));
 			if (tagsObject.relevantTags <= 0 || styledTagsObject <= 0) {
 				return;
 			}
-			await editStyledFile(styledFilePath, styledTagsObject.relevantTags, styledTagsObject.numOflines); // makes the code more readable
+			await editStyledFile(styledFilePath.fsPath, relevantTags, styledTagsObject.numOflines); // makes the code more readable
 			return;
 		}
 		/* create the styled.js file */
@@ -53,7 +63,7 @@ function findTagsInCurrentFile(path, fromSymbol, toSymbol) {
 
 	const contents = fs.readFileSync(path, 'utf-8');
 	const arrFile = contents.split(/\r?\n/);
-	const numOflines = 20; // TODO
+	const numOflines = arrFile.length; // TODO
 	const filterByTag = arrFile.filter((item) => item.includes(fromSymbol));
 	const removeTheTag = filterByTag.map((item) => item.split(fromSymbol).pop().split(toSymbol)[0].trim());
 	const relevantTags =  Array.from(new Set(removeTheTag));
@@ -96,15 +106,23 @@ ${tagsArray.map((item) => `${item},\n`).join('')}
 // TODO: bc i cant know where to start and close the ``; (the user can have those in the mid of the component)
 // need to edit the new components after the end of their file, (the user will need to copy paste to the location)
 async function editStyledFile(pathStyled, tagsArray, numOfLines) {
-	// const existingTags = tagsArray.filter((item) => )
+	const contents = fs.readFileSync(pathStyled, 'utf-8');
+	const arrFile = contents.split(/\r?\n/);
 
 	// data need to not contain tabs in this file to look good on the target file
 	const data =`
+${arrFile.map((item) => `${item} \n`).join('')}
+
+${tagsArray.map((item) => `\nconst ${item} = styled.div\`
+display: flex;
+\`;\n`).join('')}
+export default S = {
+${tagsArray.map((item) => `${item},\n`).join('')}
+};
 
 `;
-
-	// fs.writeFileSync(pathStyled.fsPath, data, 'utf-8');
-	// await vscode.workspace.applyEdit(wsedit);
+	fs.writeFileSync(pathStyled, data, 'utf-8'); // create the file
+	await vscode.workspace.applyEdit(wsedit); // finilazing the edit
 	vscode.window.showInformationMessage('Your styled.js file has been edited!');
 }
 
