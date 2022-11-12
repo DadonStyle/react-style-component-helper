@@ -1,0 +1,2 @@
+1. edit in the file itself and not just adding in the end
+2. option to delete unused tags inside styled.js file

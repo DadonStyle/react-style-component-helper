@@ -10,14 +10,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:react-style-component-helper.helloWorld"
+    "onCommand:react-style-component-helper.generateStyled"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "react-style-component-helper.helloWorld",
-        "title": "Hello World"
+        "command": "react-style-component-helper.generateStyled",
+        "title": "Generate styled"
       }
     ]
   },
