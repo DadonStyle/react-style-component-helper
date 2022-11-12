@@ -2,7 +2,7 @@
   "name": "react-style-component-helper",
   "displayName": "React-style-component-helper",
   "version": "0.0.1",
-  "publisher": "Noam Dadon",
+  "publisher": "NoamDadon",
   "description": "Help you build styled component with fixed format and less boiler code",
   "author": {
     "name": "Noam Dadon"
@@ -33,9 +33,7 @@
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "node ./test/runTest.js",
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
+    "test": "node ./test/runTest.js"
   },
   "devDependencies": {
     "@types/vscode": "^1.71.0",
@@ -48,5 +46,9 @@
     "typescript": "^4.7.4",
     "@vscode/test-electron": "^2.1.5"
   },
-  "license": "SEE LICENSE IN LICENSE.txt"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DadonStyle/react-style-component-helper.git"
+  },
+  "license": ""
 }
