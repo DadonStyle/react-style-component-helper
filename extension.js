@@ -21,8 +21,11 @@ function activate(context) {
 			return [];
 		}
 		/* varbs */
-		const styledFilePath = vscode.Uri.file(vscode.workspace.workspaceFolders[0].uri.fsPath + '/' + styledConst); // gets the path of the styled file
+		const currentFileName = vscode.window.activeTextEditor.document.fileName.split("\\").pop().split(".")[0].trim(); // gets the name to replace
+		const styledPath = vscode.window.activeTextEditor.document.fileName.split("\\").reverse().join("\\").replace(currentFileName, "styled").replace("jsx", "js").split("\\").reverse().join("\\"); // gets the path of the styled file
+		const styledFilePath = vscode.Uri.file(styledPath); // puts the path inside vscode editor (without we cant create files)
 		const currentFilePath = vscode.window.activeTextEditor.document.fileName; // gets the path of the current path
+
 		/* filter the file and return the tags and the number of lines*/
 		const tagsObject = findTagsInCurrentFile(currentFilePath, '<S.', '>');
 		if (!tagsObject.relevantTags || tagsObject.relevantTags.length <= 0) {
@@ -89,7 +92,6 @@ function findTagsInCurrentFile(path, fromSymbol, toSymbol) {
 async function createStyledFile(pathStyled, tagsArray) {
 	wsedit.createFile(pathStyled, { overwrite: false });
 	await vscode.workspace.applyEdit(wsedit);
-
 	// data need to not contain tabs in this file to look good on the target file
 	const data =`
 import styled from \'styled-components/macro\';
@@ -100,7 +102,6 @@ export default S = {
 ${tagsArray.map((item) => `${item},\n`).join('')}
 };
 `;
-
 	fs.writeFileSync(pathStyled.fsPath, data, 'utf-8'); // create the file
 	await vscode.workspace.applyEdit(wsedit); // finilazing the edit
 	vscode.window.showInformationMessage('Your styled.js file has been created!');
