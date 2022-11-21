@@ -9,14 +9,14 @@ The file format should be as follow:
 2. tags should start with "< S.",
 <br />
 <br />
-![Comparison](testImage.jpg)
+<img src="./testImage.JPG" alt="">
 <br />
 <br />
 3. styled component file name will always be "styled.js"
 4. styled file structure will be like that: 
 <br />
 <br />
-![Comparison](afterCommand.jpg)
+<img src="./afterCommand.JPG" alt="">
 <br />
 <br />
 
