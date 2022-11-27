@@ -22,9 +22,13 @@ function activate(context) {
 		}
 		/* varbs */
 		const currentFileName = vscode.window.activeTextEditor.document.fileName.split("\\").pop().split(".")[0].trim(); // gets the name to replace
+		console.log('currentFileName', currentFileName)
 		const styledPath = vscode.window.activeTextEditor.document.fileName.split("\\").reverse().join("\\").replace(currentFileName, "styled").replace("jsx", "js").split("\\").reverse().join("\\"); // gets the path of the styled file
+		console.log('styledPath', styledPath)
 		const styledFilePath = vscode.Uri.file(styledPath); // puts the path inside vscode editor (without we cant create files)
+		console.log('styledFilePath', styledFilePath)
 		const currentFilePath = vscode.window.activeTextEditor.document.fileName; // gets the path of the current path
+		console.log('currentFilePath', currentFilePath)
 
 		/* filter the file and return the tags and the number of lines*/
 		const tagsObject = findTagsInCurrentFile(currentFilePath, '<S.', '>');
