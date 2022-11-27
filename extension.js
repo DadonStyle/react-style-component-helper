@@ -20,15 +20,14 @@ function activate(context) {
 			vscode.window.showErrorMessage('Please open the file to create from, not styled.js');
 			return [];
 		}
+
+		await vscode.workspace.applyEdit(wsedit); // might be removable, make sure the workspace is open for edit
+
 		/* varbs */
 		const currentFileName = vscode.window.activeTextEditor.document.fileName.split("\\").pop().split(".")[0].trim(); // gets the name to replace
-		console.log('currentFileName', currentFileName)
-		const styledPath = vscode.window.activeTextEditor.document.fileName.split("\\").reverse().join("\\").replace(currentFileName, "styled").replace("jsx", "js").split("\\").reverse().join("\\"); // gets the path of the styled file
-		console.log('styledPath', styledPath)
+		const styledPath = vscode.window.activeTextEditor.document.fileName.split("\\").reverse().join("/").replace(currentFileName, "styled").replace("jsx", "js").split("/").reverse().join("/"); // gets the path of the styled file
 		const styledFilePath = vscode.Uri.file(styledPath); // puts the path inside vscode editor (without we cant create files)
-		console.log('styledFilePath', styledFilePath)
-		const currentFilePath = vscode.window.activeTextEditor.document.fileName; // gets the path of the current path
-		console.log('currentFilePath', currentFilePath)
+		const currentFilePath = vscode.window.activeTextEditor.document.fileName.split("\\").join("/"); // gets the path of the current path
 
 		/* filter the file and return the tags and the number of lines*/
 		const tagsObject = findTagsInCurrentFile(currentFilePath, '<S.', '>');
@@ -136,7 +135,7 @@ export default S = {
 ${tagsArray.map((item) => `${item},\n`).join('')}
 };
 
-`;
+`;	await vscode.workspace.applyEdit(wsedit); // finilazing the edit
 	fs.writeFileSync(pathStyled, data, 'utf-8'); // create the file
 	await vscode.workspace.applyEdit(wsedit); // finilazing the edit
 	vscode.window.showInformationMessage('Your styled.js file has been edited!');
