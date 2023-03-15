@@ -31,4 +31,9 @@ The second image is what you get after you execute the command *Generate styled*
 <br />
 <br />
 
+First extension :) 
+
+Github: 
+https://github.com/DadonStyle/react-style-component-helper
+
 **Enjoy!**
