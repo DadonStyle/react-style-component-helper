@@ -1,56 +1,104 @@
 /* imports */
-const vscode = require('vscode');
-const fs = require('fs');
+const vscode = require("vscode");
+const fs = require("fs");
 
 /* vars */
 const wsedit = new vscode.WorkspaceEdit();
-const styledConst = 'styled.js'
+const styledConst = "styled.js";
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-	let disposable = vscode.commands.registerCommand('react-style-component-helper.generateStyled', async function () { // this syntax is a template from vscode
-		/* validate that the user have any file open while executing the command */
-		if (typeof vscode.window.activeTextEditor === typeof undefined) {
-			return vscode.window.showInformationMessage('Please enter the required file and try again');
-		}
-		/* validate that the user is not on the styled js file */
-		if (vscode.window.activeTextEditor.document.fileName.includes(styledConst)) { // check the current open file
-			vscode.window.showErrorMessage('Please open the file to create from, not styled.js');
-			return [];
-		}
+  let disposable = vscode.commands.registerCommand(
+    "react-style-component-helper.generateStyled",
+    async function () {
+      // this syntax is a template from vscode
+      /* validate that the user have any file open while executing the command */
+      if (typeof vscode.window.activeTextEditor === typeof undefined) {
+        return vscode.window.showInformationMessage(
+          "Please enter the required file and try again"
+        );
+      }
+      /* validate that the user is not on the styled js file */
+      if (
+        vscode.window.activeTextEditor.document.fileName.includes(styledConst)
+      ) {
+        // check the current open file
+        vscode.window.showErrorMessage(
+          "Please open the file to create from, not styled.js"
+        );
+        return [];
+      }
 
-		await vscode.workspace.applyEdit(wsedit); // might be removable, make sure the workspace is open for edit
+      /* varbs */
+      const currentFileName = vscode.window.activeTextEditor.document.fileName
+        .split("\\")
+        .pop()
+        .split(".")[0]
+        .trim(); // gets the name to replace
+      const styledPath = vscode.window.activeTextEditor.document.fileName
+        .split("\\")
+        .reverse()
+        .join("/")
+        .replace(currentFileName, "styled")
+        .replace("jsx", "js")
+        .split("/")
+        .reverse()
+        .join("/"); // gets the path of the styled file
+      const styledFilePath = vscode.Uri.file(styledPath); // puts the path inside vscode editor (without we cant create files)
+      const currentFilePath = vscode.window.activeTextEditor.document.fileName
+        .split("\\")
+        .join("/"); // gets the path of the current path
 
-		/* varbs */
-		const currentFileName = vscode.window.activeTextEditor.document.fileName.split("\\").pop().split(".")[0].trim(); // gets the name to replace
-		const styledPath = vscode.window.activeTextEditor.document.fileName.split("\\").reverse().join("/").replace(currentFileName, "styled").replace("jsx", "js").split("/").reverse().join("/"); // gets the path of the styled file
-		const styledFilePath = vscode.Uri.file(styledPath); // puts the path inside vscode editor (without we cant create files)
-		const currentFilePath = vscode.window.activeTextEditor.document.fileName.split("\\").join("/"); // gets the path of the current path
+      const permissionsObj = getPermissions(currentFilePath);
 
-		/* filter the file and return the tags and the number of lines*/
-		const tagsObject = findTagsInCurrentFile(currentFilePath, '<S.', '>');
-		if (!tagsObject.relevantTags || tagsObject.relevantTags.length <= 0) {
-			vscode.window.showErrorMessage('No tags found, Please make sure to use <S. at the start of the tag');
-			return;
-		}
-		/* check if styled.js file already exist */
-		if (fs.existsSync(styledFilePath.fsPath)) {
-			let relevantTags = tagsObject.relevantTags;
-			const styledTagsObject = findTagsInCurrentFile(styledFilePath.fsPath, 'const', '=');
-			if (styledTagsObject.relevantTags && styledTagsObject.relevantTags.length > 0) {
-				relevantTags = handleDuplicate(styledTagsObject.relevantTags, tagsObject.relevantTags);
-			}
-			await editStyledFile(styledFilePath.fsPath, relevantTags, styledTagsObject.numOflines);
-			return;
-		}
-		/* create the styled.js file */
-		await createStyledFile(styledFilePath, tagsObject.relevantTags);
-		return;
-	});
+      const newPermissions = permissionsObj.ownerPermissions | 0o200;
+      fs.chmodSync(currentFilePath, newPermissions);
 
-	context.subscriptions.push(disposable);
+      console.log("Write permissions granted");
+
+      await vscode.workspace.applyEdit(wsedit); // might be removable, make sure the workspace is open for edit
+
+      /* filter the file and return the tags and the number of lines*/
+      const tagsObject = findTagsInCurrentFile(currentFilePath, "<S.", ">");
+      if (!tagsObject.relevantTags || tagsObject.relevantTags.length <= 0) {
+        vscode.window.showErrorMessage(
+          "No tags found, Please make sure to use <S. at the start of the tag"
+        );
+        return;
+      }
+      /* check if styled.js file already exist */
+      if (fs.existsSync(styledFilePath.fsPath)) {
+        let relevantTags = tagsObject.relevantTags;
+        const styledTagsObject = findTagsInCurrentFile(
+          styledFilePath.fsPath,
+          "const",
+          "="
+        );
+        if (
+          styledTagsObject.relevantTags &&
+          styledTagsObject.relevantTags.length > 0
+        ) {
+          relevantTags = handleDuplicate(
+            styledTagsObject.relevantTags,
+            tagsObject.relevantTags
+          );
+        }
+        await editStyledFile(
+          styledFilePath.fsPath,
+          relevantTags,
+          styledTagsObject.numOflines
+        );
+        return;
+      }
+      /* create the styled.js file */
+      await createStyledFile(styledFilePath, tagsObject.relevantTags);
+      return;
+    }
+  );
+
+  context.subscriptions.push(disposable);
 }
 
 /**
@@ -141,7 +189,13 @@ ${tagsArray.map((item) => `${item},\n`).join('')}
 	vscode.window.showInformationMessage('Your styled.js file has been edited!');
 }
 
-
+function getPermissions(filepath) {
+  const stats = fs.statSync(filepath);
+  const ownerPermissions = stats.mode & 0o700;
+  const groupPermissions = stats.mode & 0o070;
+  const otherPermissions = stats.mode & 0o007;
+  return ownerPermissions, groupPermissions, otherPermissions;
+}
 
 // this method is called when your extension is deactivated
 function deactivate() {}
