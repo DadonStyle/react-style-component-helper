@@ -36,7 +36,6 @@ function activate(context) {
       let currentFilePath = ''
       let styledPath = '';
       let styledFilePath = '';
-      debugger;
       if (isWindows) {
         currentFileName = vscode.window.activeTextEditor.document.fileName
         .split("\\")
