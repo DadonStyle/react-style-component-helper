@@ -3,7 +3,7 @@ const vscode = require("vscode");
 const fsSync = require("fs");
 const fs = require("fs").promises;
 const env = vscode.env;
-const isWindows = !!(env?.appRoot[0] !== "/"); // windows path start usually with c: or f:, linux starts with '/'
+const isWindows = !!(env.appRoot && env.appRoot[0] !== "/"); // windows path start usually with c: or f:, linux starts with '/'
 
 /* vars */
 // const wsedit = new vscode.WorkspaceEdit();
@@ -73,7 +73,7 @@ function activate(context) {
       const isExist = fsSync.existsSync(styledPath);
       if (isExist) {
         let relevantTags = tagsObject.relevantTags;
-        const styledTagsObject = findTagsInCurrentFile(
+        const styledTagsObject = await findTagsInCurrentFile(
           styledPath,
           "const",
           "="
@@ -189,7 +189,6 @@ display: flex;
 export default S = {
 ${tagsArray.map((item) => `${item},\n`).join('')}
 };
-
 `;	
 	await fs.writeFile(pathStyled, data, 'utf-8'); // create the file
 	vscode.window.showInformationMessage('Your styled.js file has been edited!');
