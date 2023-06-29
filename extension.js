@@ -2,10 +2,13 @@
 const vscode = require("vscode");
 const fsSync = require("fs");
 const fs = require("fs").promises;
+const env = vscode.env;
+const isWindows = () => !!(env.appRoot && env.appRoot[0] !== "/"); // windows path start usually with c: or f:, linux starts with '/'
 
 /* vars */
 // const wsedit = new vscode.WorkspaceEdit();
 const styledFileName = "styled.js";
+// const os = window.navigator.userAgent;
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -28,11 +31,35 @@ function activate(context) {
         );
         return [];
       }
-      /* varbs */
-      const currentFileName = vscode.window.activeTextEditor.document.fileName.split('/').pop(); // get current file name to replace
-      const currentFilePath = vscode.window.activeTextEditor.document.fileName; // get the full user path
-      const styledPath = currentFilePath.replace(currentFileName, styledFileName); // get the location of the styled path (or where to create it)
-
+      /* varbs */ 
+      let currentFileName = '';
+      let currentFilePath = ''
+      let styledPath = '';
+      let styledFilePath = '';
+      if (isWindows) {
+        currentFileName = vscode.window.activeTextEditor.document.fileName
+        .split("\\")
+        .pop()
+        .split(".")[0]
+        .trim(); // gets the name to replace
+        styledPath = vscode.window.activeTextEditor.document.fileName
+        .split("\\")
+        .reverse()
+        .join("/")
+        .replace(currentFileName, "styled")
+        .replace("jsx", "js")
+        .split("/")
+        .reverse()
+        .join("/"); // gets the path of the styled file
+        styledFilePath = vscode.Uri.file(styledPath); // puts the path inside vscode editor (without we cant create files)
+        currentFilePath = vscode.window.activeTextEditor.document.fileName
+        .split("\\")
+        .join("/"); // gets the path of the current path
+      } else {
+        currentFileName = vscode.window.activeTextEditor.document.fileName.split('/').pop(); // get current file name to replace
+        currentFilePath = vscode.window.activeTextEditor.document.fileName; // get the full user path
+        styledPath = currentFilePath.replace(currentFileName, styledFileName); // get the location of the styled path (or where to create it)
+      }
       /* filter the file and return the tags and the number of lines*/
       const tagsObject = await findTagsInCurrentFile(currentFilePath, "<S.", ">");
       if (!tagsObject.relevantTags || tagsObject.relevantTags.length <= 0) {
@@ -121,7 +148,7 @@ ${tagsArray.map((item) => `${item},\n`).join('')}
 };
 `;
 try {
-  fs.writeFile(styledPath, data, 'utf-8'); // create the file
+  await fs.writeFile(styledPath, data, 'utf-8'); // create the file
   vscode.window.showInformationMessage('Your styled.js file has been created!');
 } catch (err) {
   vscode.window.showErrorMessage(err.message);
@@ -164,7 +191,7 @@ ${tagsArray.map((item) => `${item},\n`).join('')}
 };
 
 `;	
-	fs.writeFile(pathStyled, data, 'utf-8'); // create the file
+	await fs.writeFile(pathStyled, data, 'utf-8'); // create the file
 	vscode.window.showInformationMessage('Your styled.js file has been edited!');
 }
 
