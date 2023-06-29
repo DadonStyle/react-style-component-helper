@@ -3,7 +3,7 @@ const vscode = require("vscode");
 const fsSync = require("fs");
 const fs = require("fs").promises;
 const env = vscode.env;
-const isWindows = () => !!(env.appRoot && env.appRoot[0] !== "/"); // windows path start usually with c: or f:, linux starts with '/'
+const isWindows = !!(env?.appRoot[0] !== "/"); // windows path start usually with c: or f:, linux starts with '/'
 
 /* vars */
 // const wsedit = new vscode.WorkspaceEdit();
@@ -36,6 +36,7 @@ function activate(context) {
       let currentFilePath = ''
       let styledPath = '';
       let styledFilePath = '';
+      debugger;
       if (isWindows) {
         currentFileName = vscode.window.activeTextEditor.document.fileName
         .split("\\")
