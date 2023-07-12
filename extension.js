@@ -182,13 +182,14 @@ async function editStyledFile(pathStyled, tagsArray, numOfLines) {
 
 	// data need to not contain tabs in this file to look good on the target file
 	const data =`${arrFile.map((item) => `${item} \n`).join('')}
-${numOfLines > 1 ? '' : 'import styled from \'styled-components/macro\';'}
+${numOfLines > 1 ? '' : 'import styled from \'styled-components\';'}
 ${tagsArray.map((item) => `\nconst ${item} = styled.div\`
 display: flex;
 \`;\n`).join('')}
-export default S = {
+const S = {
 ${tagsArray.map((item) => `${item},\n`).join('')}
 };
+export default S;
 `;	
 	await fs.writeFile(pathStyled, data, 'utf-8'); // create the file
 	vscode.window.showInformationMessage('Your styled.js file has been edited!');
