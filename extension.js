@@ -139,13 +139,16 @@ async function findTagsInCurrentFile(path, fromSymbol, toSymbol) {
  */
 async function createStyledFile(styledPath, tagsArray) {
 // data need to not contain tabs in this file to look good on the target file
-	const data =`import styled from \'styled-components/macro\';
+	const data =`import styled from \'styled-components\';
 ${tagsArray.map((item) => `\nconst ${item} = styled.div\`
 display: flex;
 \`;\n`).join('')}
-export default S = {
-${tagsArray.map((item) => `${item},\n`).join('')}
+
+const S = {
+  ${tagsArray.map((item) => `${item},\n`).join('')}
 };
+
+export default S;
 `;
 try {
   await fs.writeFile(styledPath, data, 'utf-8'); // create the file
